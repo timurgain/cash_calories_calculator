@@ -23,15 +23,14 @@ class Record:
 class Calculator:
     """Describtion."""
 
-    global records = []
-
     def __init__(self, limit: int) -> None:
         self.limit = limit
 
     def add_record(record: Record):
-        r = record.get_record
-        records = records.append[r]
-        pass
+        records = []
+        rec = record.get_record
+        records = records.append[rec]
+        return records
 
     def get_today_stats():
         pass
