@@ -3,20 +3,21 @@ from typing import List, Optional
 
 USD_RATE = 75
 EURO_RATE = 90
+RUB_RATE = 1
 today = dt.datetime.utcnow().date() + dt.timedelta(hours=3)
 
 
 class Record:
-    """Describtion."""
+    """Contains and return info about cash or calories."""
 
     def __init__(self,
                  amount: int,
                  comment: str,
                  date: Optional[str] = None) -> None:
-        if amount > 0:
+        if type(amount) == int and amount > 0:
             self.amount = amount
         else:
-            return print('Only use numbers grater then zero')
+            raise TypeError('Only use numbers grater then zero')
         self.comment = comment
         if date is None:
             self.date = today
@@ -34,19 +35,19 @@ class Record:
 
 
 class Calculator:
-    """Describtion."""
+    """Contains the limit and methods for calculations."""
 
     def __init__(self, limit: int) -> None:
         self.records = []
-        if limit > 0:
+        if type(limit) == int and limit > 0:
             self.limit = limit
         else:
-            return print('Only use numbers grater then zero')
+            raise TypeError('Only use numbers grater then zero')
 
     def add_record(self, record: Record) -> None:
         rec = record.get_record()
         self.records.append(rec)
-        print(f'Записал {self.records}')
+        print('Записал')
 
     def get_day_stats(self, minus_day_delta: Optional[int] = None) -> int:
         day_stats = 0
@@ -54,7 +55,7 @@ class Calculator:
             day = today - dt.timedelta(days=minus_day_delta)
         else:
             day = today
-        for rec in self.records:
+        for rec in self.records:  # self.records = [amount, comment, date]
             if rec[2] == day:
                 day_stats = day_stats + rec[0]
         return day_stats
@@ -70,7 +71,7 @@ class Calculator:
 
 
 class CaloriesCalculator(Calculator):
-    """Describtion."""
+    """Calculates the amount of calories eaten per day."""
 
     def get_calories_remained(self) -> str:
         calories_remained = self.limit - self.get_today_stats()
@@ -83,22 +84,48 @@ class CaloriesCalculator(Calculator):
 
 
 class CashCalculator(Calculator):
-    """Describtion."""
+    """Calculates the amount of cash spent per day."""
 
-    def get_today_cash_remained(currency: str) -> str:
-        pass
+    def get_today_cash_remained(self, currency: str) -> str:
+        cur_info = {'rub': ['руб', RUB_RATE],
+                    'usd': ['USD', USD_RATE],
+                    'eur': ['Euro', EURO_RATE]}
+        cash_remained = self.limit - self.get_today_stats()
+        cash_remained = cash_remained / cur_info[currency][1]
+        cash_remained = round(cash_remained, 2)
+        if cash_remained > 0:
+            return (f'На сегодня осталось '
+                    f'{cash_remained} {cur_info[currency][0]}')
+        elif cash_remained == 0:
+            return 'Денег нет, держись'
+        else:
+            return (f'Денег нет, держись: твой долг'
+                    f' - {cash_remained} {cur_info[currency][0]}')
 
 
 calories_calculator = CaloriesCalculator(100)
-rec1 = Record(amount=33, comment='wow', date='23.09.2013')
-rec2 = Record(amount=25, comment='wow')
+cash = CashCalculator(100)
+
+rec1 = Record(amount=(3), comment='wow', date='23.09.2013')
+rec2 = Record(amount=4, comment='wow')
 rec3 = Record(amount=10, comment='wow', date='12.10.2021')
 rec4 = Record(amount=40, comment='wow', date='7.10.2021')
-rec5 = Record(amount=89, comment='wow')
+rec5 = Record(amount=75, comment='wow')
+
+cash.add_record(rec1)
+cash.add_record(rec2)
+cash.add_record(rec3)
+cash.add_record(rec4)
+cash.add_record(rec5)
+
+print(cash.get_today_cash_remained('eur'))
+print(cash.get_week_stats())
+
 calories_calculator.add_record(rec1)
 calories_calculator.add_record(rec2)
 calories_calculator.add_record(rec3)
 calories_calculator.add_record(rec4)
 calories_calculator.add_record(rec5)
-print(f'Week {calories_calculator.get_week_stats()}')
+
+print(calories_calculator.get_week_stats())
 print(calories_calculator.get_calories_remained())
