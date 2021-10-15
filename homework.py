@@ -1,9 +1,7 @@
 import datetime as dt
 from typing import List, Optional
 
-USD_RATE = 75
-EURO_RATE = 90
-RUB_RATE = 1
+
 today = dt.datetime.utcnow().date() + dt.timedelta(hours=3)
 
 
@@ -14,10 +12,7 @@ class Record:
                  amount: int,
                  comment: str,
                  date: Optional[str] = None) -> None:
-        if type(amount) == int and amount > 0:
-            self.amount = amount
-        else:
-            raise TypeError('Only use numbers grater then zero')
+        self.amount = abs(amount)
         self.comment = comment
         if date is None:
             self.date = today
@@ -39,15 +34,10 @@ class Calculator:
 
     def __init__(self, limit: int) -> None:
         self.records = []
-        if type(limit) == int and limit > 0:
-            self.limit = limit
-        else:
-            raise TypeError('Only use numbers grater then zero')
+        self.limit = abs(limit)
 
     def add_record(self, record: Record) -> None:
-        rec = record.get_record()
-        self.records.append(rec)
-        print('Записал')
+        self.records.append(record)
 
     def get_day_stats(self, minus_day_delta: Optional[int] = None) -> int:
         day_stats = 0
@@ -55,7 +45,8 @@ class Calculator:
             day = today - dt.timedelta(days=minus_day_delta)
         else:
             day = today
-        for rec in self.records:  # self.records = [amount, comment, date]
+        for rec in self.records:
+            rec = Record.get_record(rec)  # rec = [amount, comment, date]
             if rec[2] == day:
                 day_stats = day_stats + rec[0]
         return day_stats
@@ -86,10 +77,14 @@ class CaloriesCalculator(Calculator):
 class CashCalculator(Calculator):
     """Calculates the amount of cash spent per day."""
 
+    USD_RATE = 75
+    EURO_RATE = 90
+    RUB_RATE = 1
+
     def get_today_cash_remained(self, currency: str) -> str:
-        cur_info = {'rub': ['руб', RUB_RATE],
-                    'usd': ['USD', USD_RATE],
-                    'eur': ['Euro', EURO_RATE]}
+        cur_info = {'rub': ['руб', CashCalculator.RUB_RATE],
+                    'usd': ['USD', CashCalculator.USD_RATE],
+                    'eur': ['Euro', CashCalculator.EURO_RATE]}
         cash_remained = self.limit - self.get_today_stats()
         cash_remained = cash_remained / cur_info[currency][1]
         cash_remained = round(cash_remained, 2)
@@ -100,16 +95,16 @@ class CashCalculator(Calculator):
             return 'Денег нет, держись'
         else:
             return (f'Денег нет, держись: твой долг'
-                    f' - {cash_remained} {cur_info[currency][0]}')
+                    f' - {abs(cash_remained)} {cur_info[currency][0]}')
 
 
 calories_calculator = CaloriesCalculator(100)
 cash = CashCalculator(100)
 
 rec1 = Record(amount=(3), comment='wow', date='23.09.2013')
-rec2 = Record(amount=4, comment='wow')
+rec2 = Record(amount=21, comment='wow')
 rec3 = Record(amount=10, comment='wow', date='12.10.2021')
-rec4 = Record(amount=40, comment='wow', date='7.10.2021')
+rec4 = Record(amount=78, comment='wow', date='7.10.2021')
 rec5 = Record(amount=75, comment='wow')
 
 cash.add_record(rec1)
