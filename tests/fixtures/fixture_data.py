@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import pytest
 
 try:
-    import homework
+    import cash_calories_calculator
 except ImportError:
     pass
 
@@ -31,7 +31,7 @@ def data_records():
             date = datetime.now() + timedelta(days=random.randint(1, 6))
         else:
             date = datetime(2019, 9, 1)
-        data.append(homework.Record(amount=amount, comment=f'Test {idx}', date=date.strftime('%d.%m.%Y')))
+        data.append(cash_calories_calculator.Record(amount=amount, comment=f'Test {idx}', date=date.strftime('%d.%m.%Y')))
     random.shuffle(data)
     return data, today_count * amount, week_count * amount
 
@@ -80,20 +80,20 @@ def today_cash_remained():
 
 @pytest.fixture
 def fixture_CashCalculator(init_limit, monkeypatch):
-    result = homework.CashCalculator(init_limit)
-    if hasattr(homework.CashCalculator, 'currencies'):
-        monkeypatch.setattr(homework.CashCalculator, "currencies", {
+    result = cash_calories_calculator.CashCalculator(init_limit)
+    if hasattr(cash_calories_calculator.CashCalculator, 'currencies'):
+        monkeypatch.setattr(cash_calories_calculator.CashCalculator, "currencies", {
             'eur': ('Euro', 70),
             'usd': ('USD', 60),
             'rub': ('руб', 1),
         })
-    elif hasattr(homework.CashCalculator, 'CURRENCIES'):
-        monkeypatch.setattr(homework.CashCalculator, "CURRENCIES", {
+    elif hasattr(cash_calories_calculator.CashCalculator, 'CURRENCIES'):
+        monkeypatch.setattr(cash_calories_calculator.CashCalculator, "CURRENCIES", {
             'eur': ('Euro', 70),
             'usd': ('USD', 60),
             'rub': ('руб', 1),
         })
     else:
-        monkeypatch.setattr(homework.CashCalculator, "EURO_RATE", 70)
-        monkeypatch.setattr(homework.CashCalculator, "USD_RATE", 60)
+        monkeypatch.setattr(cash_calories_calculator.CashCalculator, "EURO_RATE", 70)
+        monkeypatch.setattr(cash_calories_calculator.CashCalculator, "USD_RATE", 60)
     return result
